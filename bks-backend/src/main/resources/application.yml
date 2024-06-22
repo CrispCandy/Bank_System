@@ -1,1 +1,5 @@
-spring.application.name=bks-backend
+spring:
+  security:
+    jwt:
+      key: abcdefghijk
+      expires: 7
