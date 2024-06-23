@@ -1,14 +1,20 @@
 package com.example.utils;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
 @Component
 public class JwtUtils {
@@ -18,6 +24,22 @@ public class JwtUtils {
 
     @Value("${spring.security.jwt.expires}")
     int expires;
+
+    public DecodedJWT resolveJwt(String headerToken) {
+        String token = this.convertToken(headerToken);
+        if(token == null) return null;
+        Algorithm algorithm = Algorithm.HMAC256(key);
+        JWTVerifier jwtVerifier = JWT.require(algorithm).build();
+        try{
+            DecodedJWT verify = jwtVerifier.verify(token);
+            Date expiresAt = verify.getExpiresAt();
+            return new Date().after(expiresAt) ? null : verify;
+        }catch (JWTVerificationException e){
+            return null;
+        }
+
+    }
+
     public String createJwt(UserDetails details, int id, String uername){
         Algorithm algorithm = Algorithm.HMAC256(key);
         Date expires = this.expireTime();
@@ -34,5 +56,25 @@ public class JwtUtils {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, expires * 24);
         return calendar.getTime();
+    }
+
+    public UserDetails toUser(DecodedJWT jwt){//解析用户jwt
+        Map<String, Claim> claims = jwt.getClaims();
+        return User
+                .withUsername(claims.get("username").asString())
+                .password("******")
+                .authorities(claims.get("authorities").asArray(String.class))
+                .build();
+    }
+
+    public Integer toId(DecodedJWT jwt){//解析ID
+        Map<String, Claim> claims = jwt.getClaims();
+        return claims.get("id").asInt();
+    }
+
+    private String convertToken(String headerToken){
+        if(headerToken == null || !headerToken.startsWith("Bearer "))
+            return null;
+        return headerToken.substring(7);
     }
 }
