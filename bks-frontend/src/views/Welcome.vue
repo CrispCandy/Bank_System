@@ -4049,19 +4049,19 @@ export default {
    },
 
    methods: {
-//
-//     ToRegister(){
-//       this.$router.push({path:"/Register"})
-//     },
-//     sendEmail() {
-//       if (this.checkEmail()) {
-//         this.sendLoading = true
-//         AdminSendEmail(this.form.email).then((res) => {
-//           if (res.status) this.$message.success("验证码发送成功")
-//           this.sendLoading = false
-//         })
-//       }
-//     },
+
+     ToRegister() {
+       this.$router.push({ name: "register" });
+     }
+    // sendEmail() {
+    //   if (this.checkEmail()) {
+    //     this.sendLoading = true
+    //     AdminSendEmail(this.form.email).then((res) => {
+    //       if (res.status) this.$message.success("验证码发送成功")
+    //       this.sendLoading = false
+    //     })
+    //   }
+    // },
 //
 //     submitLogin() {
 //       if (this.checkEmail()) {
